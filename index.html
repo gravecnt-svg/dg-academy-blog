@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DG Academy · Tributos em Foco</title>
+<meta name="description" content="Notícias da Receita Federal resumidas diariamente por inteligência artificial para contadores.">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g1:#C9A84C;--g2:#E8C96A;--g3:#A07830;
+  --bg:#0A0A0A;--card:#111111;--card2:#181818;
+  --bgold:rgba(201,168,76,0.28);--bgoldhi:rgba(201,168,76,0.6);
+  --tm:#F0EAD6;--ts:rgba(240,234,214,0.52);--td:rgba(240,234,214,0.22)
+}
+html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tm)}
+
+header{border-bottom:0.5px solid var(--bgold);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;background:var(--card);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-sigla{font-size:20px;font-weight:700;letter-spacing:0.08em;color:var(--g1)}
+.logo-sigla span{color:var(--g2)}
+.logo-div{width:0.5px;height:24px;background:var(--bgold)}
+.logo-txt{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ts);line-height:1.4}
+.header-r{display:flex;align-items:center;gap:10px}
+.date-badge{font-size:11px;color:var(--ts);padding:4px 12px;border:0.5px solid var(--bgold);border-radius:20px}
+.update-info{font-size:10px;color:var(--td);text-align:right;line-height:1.5}
+.btn-live{padding:7px 14px;background:rgba(201,168,76,0.12);border:0.5px solid var(--bgold);border-radius:8px;color:var(--ts);font-size:11px;cursor:pointer;transition:all 0.2s}
+.btn-live:hover{background:rgba(201,168,76,0.22);color:var(--g1);border-color:var(--g1)}
+.btn-live:disabled{opacity:0.4;cursor:not-allowed}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+
+.hero{padding:40px 32px 32px;border-bottom:0.5px solid var(--bgold);background:var(--card)}
+.hero-tag{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--g3);margin-bottom:10px;font-weight:500}
+.hero-title{font-size:26px;font-weight:500;color:var(--tm);line-height:1.25;margin-bottom:8px}
+.hero-title span{color:var(--g1)}
+.hero-sub{font-size:13px;color:var(--ts);max-width:500px;line-height:1.7}
+.hero-stats{display:flex;gap:24px;margin-top:22px}
+.stat{border-left:2px solid var(--bgold);padding-left:14px}
+.stat-val{font-size:20px;font-weight:500;color:var(--g1);line-height:1}
+.stat-lbl{font-size:10px;color:var(--ts);margin-top:3px}
+
+.main{max-width:960px;margin:0 auto;padding:28px 32px}
+
+.filters{display:flex;gap:7px;margin-bottom:22px;flex-wrap:wrap}
+.fbtn{padding:5px 14px;border-radius:20px;border:0.5px solid var(--bgold);background:transparent;color:var(--ts);font-size:11px;cursor:pointer;transition:all 0.15s}
+.fbtn:hover{color:var(--tm);border-color:var(--bgoldhi)}
+.fbtn.active{background:rgba(201,168,76,0.14);color:var(--g1);border-color:var(--g1)}
+
+.loading{display:none;text-align:center;padding:56px 20px}
+.loading.show{display:block}
+.loading-ic{font-size:26px;color:var(--g1);display:inline-block;margin-bottom:14px}
+.loading-txt{font-size:13px;color:var(--ts)}
+.loading-step{font-size:11px;color:var(--td);margin-top:7px}
+
+.empty{display:none;text-align:center;padding:56px 20px}
+.empty.show{display:block}
+.empty-ic{font-size:30px;color:var(--td);margin-bottom:12px}
+.empty-txt{font-size:14px;color:var(--ts);margin-bottom:6px}
+.empty-sub{font-size:12px;color:var(--td)}
+
+.grid{display:none;flex-direction:column;gap:12px}
+.grid.show{display:flex}
+
+.card-d{border:0.5px solid var(--bgoldhi);border-radius:12px;padding:24px;background:var(--card);transition:border-color 0.15s}
+.card-d:hover{border-color:var(--g2)}
+.card-d .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-d .ct{font-size:18px;font-weight:500;color:var(--tm);line-height:1.4;margin-bottom:10px}
+.card-d .cb{font-size:13px;color:var(--ts);line-height:1.8}
+.card-d .cb p{margin-bottom:10px}
+.card-d .cb p:last-child{margin-bottom:0}
+
+.card-n{border:0.5px solid var(--bgold);border-radius:10px;padding:16px 18px;background:var(--card);transition:border-color 0.15s}
+.card-n:hover{border-color:var(--bgoldhi)}
+.card-n .ct{font-size:13px;font-weight:500;color:var(--tm);line-height:1.4;margin-bottom:7px}
+.card-n .cb{font-size:12px;color:var(--ts);line-height:1.7}
+
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:580px){.two{grid-template-columns:1fr}}
+
+.cbadge{font-size:9px;padding:2px 9px;border-radius:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em}
+.ci{background:rgba(201,168,76,0.1);color:var(--g1);border:0.5px solid var(--bgold)}
+.cc{background:rgba(56,139,221,0.1);color:#85B7EB;border:0.5px solid rgba(56,139,221,0.25)}
+.cs{background:rgba(29,158,117,0.1);color:#5DCAA5;border:0.5px solid rgba(29,158,117,0.25)}
+.cn{background:rgba(216,90,48,0.1);color:#F0997B;border:0.5px solid rgba(216,90,48,0.25)}
+.cg{background:rgba(240,234,214,0.05);color:var(--ts);border:0.5px solid var(--bgold)}
+.novo{font-size:9px;padding:1px 7px;border-radius:8px;background:rgba(29,158,117,0.1);color:#5DCAA5;border:0.5px solid rgba(29,158,117,0.25)}
+
+.cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--bgold)}
+.csrc{font-size:10px;color:var(--td)}
+.clink{font-size:10px;color:var(--g1);text-decoration:none;opacity:0.75}
+.clink:hover{opacity:1}
+.cdate{font-size:10px;color:var(--td)}
+
+.auto-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:3px 10px;border-radius:10px;background:rgba(29,158,117,0.08);color:#5DCAA5;border:0.5px solid rgba(29,158,117,0.2);margin-bottom:20px}
+.auto-dot{width:6px;height:6px;border-radius:50%;background:#5DCAA5}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.auto-dot{animation:pulse 2s ease-in-out infinite}
+
+.news-banner{border:0.5px solid var(--bgold);border-radius:10px;padding:20px 24px;background:var(--card2);display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;flex-wrap:wrap}
+.news-banner h3{font-size:14px;font-weight:500;color:var(--tm);margin-bottom:4px}
+.news-banner p{font-size:12px;color:var(--ts)}
+.news-form{display:flex;gap:8px;flex-wrap:wrap}
+.news-input{padding:8px 14px;background:var(--card);border:0.5px solid var(--bgold);border-radius:8px;color:var(--tm);font-size:12px;outline:none;min-width:200px}
+.news-input::placeholder{color:var(--td)}
+.news-input:focus{border-color:var(--g1)}
+.news-sub{padding:8px 16px;background:rgba(201,168,76,0.14);border:0.5px solid var(--g1);border-radius:8px;color:var(--g1);font-size:12px;font-weight:500;cursor:pointer}
+.news-sub:hover{background:rgba(201,168,76,0.26)}
+
+footer{border-top:0.5px solid var(--bgold);padding:22px 32px;display:flex;align-items:center;justify-content:space-between;margin-top:32px;flex-wrap:gap}
+.foot-brand{font-size:11px;color:var(--td)}
+.foot-brand span{color:var(--g1)}
+.foot-ai{font-size:10px;color:var(--td);text-align:right;line-height:1.6}
+
+.toast{position:fixed;bottom:20px;right:20px;padding:11px 18px;background:var(--card);border:0.5px solid rgba(226,75,74,0.4);border-radius:10px;font-size:12px;color:#F09595;max-width:300px;z-index:300;display:none}
+.toast.show{display:block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-sigla">DG<span>A</span></div>
+    <div class="logo-div"></div>
+    <div class="logo-txt">Tributos<br>em Foco</div>
+  </div>
+  <div class="header-r">
+    <div>
+      <div class="date-badge" id="date-badge">—</div>
+      <div class="update-info" id="update-info"></div>
+    </div>
+    <button class="btn-live" id="btn-live" onclick="buscarAoVivo()">↻ Buscar agora</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">DG Academy · Inteligência Tributária</div>
+  <div class="hero-title">Receita Federal resumida<br>pela <span>inteligência artificial</span></div>
+  <div class="hero-sub">Todos os comunicados e atualizações da Receita Federal do Brasil, resumidos diariamente às 8h em linguagem clara para contadores.</div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val" id="stat-total">—</div><div class="stat-lbl">notícias hoje</div></div>
+    <div class="stat"><div class="stat-val">8h</div><div class="stat-lbl">atualização diária</div></div>
+    <div class="stat"><div class="stat-val">IA</div><div class="stat-lbl">resumos automáticos</div></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="auto-badge">
+    <div class="auto-dot"></div>
+    Atualização automática diária · GitHub Actions · Receita Federal
+  </div>
+
+  <div class="filters">
+    <button class="fbtn active" onclick="filtrar('todos',this)">Todos</button>
+    <button class="fbtn" onclick="filtrar('Imposto de Renda',this)">Imposto de Renda</button>
+    <button class="fbtn" onclick="filtrar('CNPJ',this)">CNPJ</button>
+    <button class="fbtn" onclick="filtrar('Simples Nacional',this)">Simples Nacional</button>
+    <button class="fbtn" onclick="filtrar('Nota Fiscal',this)">Nota Fiscal</button>
+    <button class="fbtn" onclick="filtrar('Geral',this)">Geral</button>
+  </div>
+
+  <div class="loading show" id="loading">
+    <div class="loading-ic spin">◎</div>
+    <div class="loading-txt" id="loading-txt">Carregando notícias...</div>
+    <div class="loading-step" id="loading-step">Lendo arquivo de notícias</div>
+  </div>
+
+  <div class="empty" id="empty">
+    <div class="empty-ic">◎</div>
+    <div class="empty-txt">Nenhuma notícia disponível</div>
+    <div class="empty-sub">Clique em "Buscar agora" para carregar as últimas notícias ao vivo</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="news-banner">
+    <div>
+      <h3>Newsletter CDG Semanal</h3>
+      <p>Receba os resumos toda segunda-feira no seu e-mail</p>
+    </div>
+    <div class="news-form">
+      <input class="news-input" type="email" placeholder="seu@email.com.br">
+      <button class="news-sub">Assinar grátis</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="foot-brand"><span>DG Academy</span> · Tributos em Foco</div>
+  <div class="foot-ai">Resumos gerados por IA · Atualização automática diária às 8h<br>Fonte oficial: Receita Federal do Brasil</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let todas = [];
+let filtroAtual = 'todos';
+
+function catClass(cat){
+  const c = (cat||'').toLowerCase();
+  if(c.includes('imposto') || c.includes('irpf') || c.includes('irpj')) return 'ci';
+  if(c.includes('cnpj') || c.includes('mei') || c.includes('empresa')) return 'cc';
+  if(c.includes('simples')) return 'cs';
+  if(c.includes('nota') || c.includes('nfe') || c.includes('nf-e')) return 'cn';
+  return 'cg';
+}
+
+function setLoading(on, txt, step){
+  document.getElementById('loading').classList.toggle('show', on);
+  if(txt) document.getElementById('loading-txt').textContent = txt;
+  if(step) document.getElementById('loading-step').textContent = step;
+  const btn = document.getElementById('btn-live');
+  btn.disabled = on;
+  btn.textContent = on ? '↻ Buscando...' : '↻ Buscar agora';
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 4000);
+}
+
+function renderNoticias(lista){
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  grid.innerHTML = '';
+  grid.classList.remove('show');
+  empty.classList.remove('show');
+
+  if(!lista || lista.length === 0){
+    empty.classList.add('show');
+    document.getElementById('stat-total').textContent = '0';
+    return;
+  }
+
+  document.getElementById('stat-total').textContent = lista.length;
+  grid.classList.add('show');
+
+  lista.forEach((n, i) => {
+    const cat  = n.categoria || 'Geral';
+    const cls  = catClass(cat);
+    const pars = (n.resumo||'').split('\n').filter(p=>p.trim());
+    const url  = (n.fonte_url && n.fonte_url !== '#') ? n.fonte_url : null;
+
+    if(i === 0){
+      const el = document.createElement('div');
+      el.className = 'card-d';
+      el.dataset.cat = cat;
+      el.innerHTML = `
+        <div class="ch">
+          <span class="cbadge ${cls}">${cat}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="novo">Novo</span>
+            <span class="cdate">${n.data||'Hoje'}</span>
+          </div>
+        </div>
+        <div class="ct">${n.titulo||''}</div>
+        <div class="cb">${pars.map(p=>`<p>${p}</p>`).join('')}</div>
+        <div class="cfoot">
+          <span class="csrc">Fonte: Receita Federal do Brasil</span>
+          ${url?`<a class="clink" href="${url}" target="_blank" rel="noopener">Ler notícia completa →</a>`:''}
+        </div>`;
+      grid.appendChild(el);
+
+      if(lista.length > 1){
+        const dois = document.createElement('div');
+        dois.className = 'two';
+        lista.slice(1,3).forEach(n2=>{
+          const c2 = n2.categoria||'Geral';
+          const l2 = catClass(c2);
+          const p2 = (n2.resumo||'').split('\n').filter(p=>p.trim())[0]||'';
+          const u2 = (n2.fonte_url && n2.fonte_url!=='#') ? n2.fonte_url : null;
+          const e2 = document.createElement('div');
+          e2.className='card-n'; e2.dataset.cat=c2;
+          e2.innerHTML=`
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+              <span class="cbadge ${l2}">${c2}</span>
+              <span class="cdate">${n2.data||'Hoje'}</span>
+            </div>
+            <div class="ct">${n2.titulo||''}</div>
+            <div class="cb">${p2}</div>
+            <div class="cfoot">
+              <span class="csrc">Receita Federal</span>
+              ${u2?`<a class="clink" href="${u2}" target="_blank" rel="noopener">Ler →</a>`:''}
+            </div>`;
+          dois.appendChild(e2);
+        });
+        grid.appendChild(dois);
+      }
+
+      lista.slice(3).forEach(n3=>{
+        const c3=n3.categoria||'Geral';
+        const l3=catClass(c3);
+        const p3=(n3.resumo||'').split('\n').filter(p=>p.trim())[0]||'';
+        const u3=(n3.fonte_url&&n3.fonte_url!=='#')?n3.fonte_url:null;
+        const e3=document.createElement('div');
+        e3.className='card-n'; e3.dataset.cat=c3;
+        e3.innerHTML=`
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+            <span class="cbadge ${l3}">${c3}</span>
+            <span class="cdate">${n3.data||'Hoje'}</span>
+          </div>
+          <div class="ct">${n3.titulo||''}</div>
+          <div class="cb">${p3}</div>
+          <div class="cfoot">
+            <span class="csrc">Receita Federal</span>
+            ${u3?`<a class="clink" href="${u3}" target="_blank" rel="noopener">Ler →</a>`:''}
+          </div>`;
+        grid.appendChild(e3);
+      });
+    }
+  });
+}
+
+function filtrar(cat, btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filtroAtual = cat;
+  const lista = cat==='todos' ? todas : todas.filter(n=>(n.categoria||'').includes(cat));
+  renderNoticias(lista);
+}
+
+// ── CARREGAR DO news.json (gerado automaticamente às 8h) ──
+async function carregarJSON(){
+  setLoading(true,'Carregando notícias...','Lendo arquivo de hoje');
+  try {
+    const res  = await fetch('news.json?v=' + Date.now());
+    const data = await res.json();
+
+    setLoading(false);
+
+    if(data.noticias && data.noticias.length > 0){
+      todas = data.noticias;
+      renderNoticias(todas);
+
+      if(data.atualizado_em){
+        const d = new Date(data.atualizado_em);
+        document.getElementById('update-info').textContent =
+          'Atualizado às ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) +
+          ' de ' + d.toLocaleDateString('pt-BR');
+      }
+    } else {
+      // news.json vazio — busca ao vivo automaticamente
+      buscarAoVivo();
+    }
+  } catch(e){
+    setLoading(false);
+    // news.json não encontrado — busca ao vivo
+    buscarAoVivo();
+  }
+}
+
+// ── BUSCA AO VIVO VIA API (fallback ou botão manual) ──
+async function buscarAoVivo(){
+  setLoading(true,'Buscando notícias ao vivo...','Conectando à Receita Federal via IA');
+
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const prompt = `Busque as últimas notícias e comunicados da Receita Federal do Brasil de hoje (${hoje}) ou dos últimos 2 dias. Retorne APENAS JSON válido sem markdown: {"noticias":[{"titulo":"...","resumo":"parágrafo1\\n\\nparágrafo2\\n\\nparágrafo3","data":"${hoje}","categoria":"Imposto de Renda|CNPJ|Simples Nacional|Nota Fiscal|Geral","fonte_url":"url ou #"}]}. Mínimo 5 notícias com impacto prático para contadores.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){ const e=await res.json(); throw new Error(e.error?.message||'Erro API'); }
+
+    const data = await res.json();
+    let txt = '';
+    for(const b of data.content||[]){ if(b.type==='text') txt+=b.text; }
+    txt = txt.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    const s=txt.indexOf('{'), f=txt.lastIndexOf('}');
+    if(s===-1||f===-1) throw new Error('JSON inválido');
+    const parsed = JSON.parse(txt.slice(s,f+1));
+    todas = parsed.noticias||[];
+    if(todas.length===0) throw new Error('Sem notícias');
+
+    renderNoticias(todas);
+    setLoading(false);
+    document.getElementById('update-info').textContent = 'Atualizado agora às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+  } catch(e){
+    setLoading(false);
+    document.getElementById('empty').classList.add('show');
+    toast('Erro ao buscar: ' + (e.message||'Tente novamente'));
+  }
+}
+
+// INIT
+document.getElementById('date-badge').textContent =
+  new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
+
+carregarJSON();
+</script>
+</body>
+</html>
