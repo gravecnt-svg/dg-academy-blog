@@ -1,0 +1,36 @@
+name: 📰 Atualizar Notícias DG Academy
+
+on:
+  schedule:
+    # Roda todo dia às 11:00 UTC = 08:00 BRT (Brasília, UTC-3)
+    - cron: '0 11 * * *'
+
+  # Permite rodar manualmente pelo painel do GitHub
+  workflow_dispatch:
+
+jobs:
+  atualizar-noticias:
+    name: Buscar e publicar notícias
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 🔍 Buscar notícias da Receita Federal
+        run: node fetch-news.js
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: 💾 Salvar news.json no repositório
+        run: |
+          git config user.name  "DG Academy Bot"
+          git config user.email "bot@dgacademy.com.br"
+          git add news.json
+          git diff --staged --quiet || git commit -m "📰 Notícias atualizadas - $(date +'%d/%m/%Y %H:%M') BRT"
+          git push
